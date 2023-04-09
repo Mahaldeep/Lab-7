@@ -6,19 +6,12 @@ Description:
 Usage:
  python create_db.py
 """
-
-import sqlite3
-from faker import Faker
-import random
-from datetime import datetime
-conn = sqlite3.connect('social_network.db')
 import os
 import inspect
+import sqlite3
+from faker import Faker
+from datetime import datetime
 
-fake = Faker()
-
-conn = sqlite3.connect('social_network.db')
-c = conn.cursor()
 
 def main():
     global db_path
@@ -28,47 +21,43 @@ def main():
 
 def create_people_table():
     """Creates the people table in the database"""
-    # : Create function body
-    
-    c.execute('''CREATE TABLE people
-             (id INTEGER PRIMARY KEY AUTOINCREMENT,
-             name TEXT,
-             email TEXT,
-             age INTEGER,
-             created_at TEXT,
-             updated_at TEXT)''')
-
+    # TODO: Create function body
+    con = sqlite3.connect(db_path)
+    cur = con.cursor()
+    create_ppl_tbl_query = """CREATE TABLE IF NOT EXISTS people(id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    address TEXT NOT NULL,
+    city TEXT NOT NULL,
+    province TEXT NOT NULL,
+    bio TEXT,
+    age INTEGER,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL);
+    """
+    cur.execute(create_ppl_tbl_query)
+    con.commit()
+    con.close()
     return
 
 def populate_people_table():
     """Populates the people table with 200 fake people"""
-    # : Create function body
-    
-    # Generate and insert fake data
-    n = []
-    em = []
-    ag = []
-    cd = []
-    ud = []
-
-    for i in range(200):
-        name = fake.name()
-        n.append(name)
-        email = fake.email()
-        em.append(email)
-        age = random.randint(1, 100)
-        ag.append(age)
-        created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        cd.append(created_at)
-        updated_at = created_at
-        ud.append(updated_at)
-        c.execute("INSERT INTO people (name, email, age, created_at, updated_at) VALUES (?, ?, ?, ?, ?)", (name, email, age, created_at, updated_at))
-
-    # Commit changes and close connection
-    conn.commit()
-    conn.close()
-
-    return 
+    # TODO: Create function body
+    con = sqlite3.connect(db_path)
+    cur = con.cursor()
+    add_person_query = """INSERT INTO people(name,email,address,city,province,
+       bio,age,created_at,updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);"""
+    # Generate fake data for 200 people
+    fake=Faker()
+    for _ in range(200):
+        new_person = (fake.name(),fake.ascii_free_email(),fake.address(),
+                        fake.city(),fake.administrative_unit(),
+                        fake.text(),fake.random_int(min=1,max=100),datetime.now(),
+                      datetime.now())
+        cur.execute(add_person_query, new_person)
+    con.commit()
+    con.close()
+    return
 
 def get_script_dir():
     """Determines the path of the directory in which this script resides
